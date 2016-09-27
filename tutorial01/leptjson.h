@@ -14,8 +14,8 @@ enum {
     LEPT_PARSE_ROOT_NOT_SINGULAR
 };
 
-int lept_parse(lept_value* v, const char* json);
+int lept_parse(lept_value* v, const char* json); //Parse the json string. v is root node. Return a enum
 
-lept_type lept_get_type(const lept_value* v);
+lept_type lept_get_type(const lept_value* v);  //get result
 
 #endif /* LEPTJSON_H__ */
