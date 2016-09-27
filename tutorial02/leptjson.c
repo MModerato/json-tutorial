@@ -1,6 +1,7 @@
 #include "leptjson.h"
 #include <assert.h>  /* assert() */
 #include <stdlib.h>  /* NULL, strtod() */
+#include <errno.h>
 
 #define EXPECT(c, ch)       do { assert(*c->json == (ch)); c->json++; } while(0)
 
@@ -45,8 +46,17 @@ static int lept_parse_null(lept_context* c, lept_value* v) {
 static int lept_parse_number(lept_context* c, lept_value* v) {
     char* end;
     /* \TODO validate number */
-    v->n = strtod(c->json, &end);
-    if (c->json == end)
+    if (*c->json == '+' || *c->json == '.' || *c->json == 'n' || *c->json == 'N' || *c->json == 'i' || *c->json == 'I')
+        return LEPT_PARSE_INVALID_VALUE;
+    if (*c->json == '0' && !(*(c->json + 1) == '.' || *(c->json + 1) == '\0'))
+        return LEPT_PARSE_ROOT_NOT_SINGULAR;
+    errno = 0;
+    v->n = strtod(c->json, &end);  //&end is a pointer to a pointer to the last interpreted character.
+    if (errno == ERANGE && v->n != 0)
+    {
+        return LEPT_PARSE_NUMBER_TOO_BIG;
+    }
+    if (c->json == end || *(end - 1) == '.')
         return LEPT_PARSE_INVALID_VALUE;
     c->json = end;
     v->type = LEPT_NUMBER;
